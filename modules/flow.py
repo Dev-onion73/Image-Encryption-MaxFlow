@@ -115,7 +115,7 @@ def visualize_graph(graph, source, sink, paths, output_dir):
     plt.title("Flow Network")
     
     # Save visualization as PNG file in the specified directory
-    viz_file_path = os.path.join(output_dir, "VIZ.png")
+    viz_file_path = os.path.join(output_dir, f"VIZ_{os.path.basename(output_dir)}.png")
     plt.savefig(viz_file_path)
     
     plt.close()  # Close this plot to prevent overlap with the next one
@@ -188,9 +188,9 @@ def animate_packet_movement(graph, source, sink, paths, packet_to_path_mapping, 
                         interval=1000,  # Slow down the animation
                         repeat=True)
 
-    # Save the animation as a GIF file in the output directory
-    ani_file_path = os.path.join(output_dir, "ANI.gif")
-    ani.save(ani_file_path, writer='pillow', fps=30)
+    # Save the animation as an APNG file in the output directory
+    ani_file_path = os.path.join(output_dir, f"ANI_{os.path.basename(output_dir)}.gif")
+    ani.save(ani_file_path, writer='pillow', fps=1)  # Adjust fps for smoother/slower playback
 
     plt.show()
 
