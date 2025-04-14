@@ -1,3 +1,3 @@
-# maxflow.py usage
+# flow.py usage
 
 python script_name.py <Generated_ID>
