@@ -1,7 +1,6 @@
-import streamlit as st
 import os
+import streamlit as st
 import random
-from PIL import Image
 
 # ----- Styling -----
 st.markdown("""
@@ -38,26 +37,33 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ----- Mock Functions -----
-def encrypt(code):
-    print(f"Encrypting image for {code}...")
+# Mock-up function to simulate encryption
+def encrypt(input_image_path, code_input):
+    # Create the directory for the given 4-digit code if it doesn't exist
+    folder = f"data/{code_input}"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
+    # Simulate encryption (moving file to the new directory)
+    encrypted_image_path = os.path.join(folder, f"{code_input}_input.png")
+    os.rename(input_image_path, encrypted_image_path)
+
+    # Delete the original input image after encryption
+    os.remove(input_image_path)
+    print("Encrypted")
+
+# Mock-up function to simulate decryption
 def decrypt(code):
-    # Dummy decrypt function
-    # Replace this with your actual decryption logic
-    # decrypted_image_path = encrypted_image_path.replace('encrypted', 'decrypted')
-    # # Simulate decryption process (e.g., by modifying image)
-    # os.rename(encrypted_image_path, decrypted_image_path)
     return f"data/{code}/{code}_output.png"
 
 def visualize(code):
-    print(f"Generating plot for {code}...")
-    folder = f"data/{code}"
-    plot_path = os.path.join(folder, f"{code}_plot.png")
+    # print(f"Generating plot for {code}...")
+    # folder = f"data/{code}"
+    # plot_path = os.path.join(folder, f"{code}_plot.gif")
 
-    # Dummy plot
-    img = Image.new("RGB", (400, 300), color=(200, 100, 150))
-    img.save(plot_path)
+    # # Dummy plot
+    # img = Image.new("RGB", (400, 300), color=(200, 100, 150))
+    # img.save(plot_path)
 
     lines = [f"Line {i+1}: Visualization result..." for i in range(128)]
 
@@ -66,21 +72,6 @@ def visualize(code):
         f.write("\n".join(lines))
 
     return "\n".join(lines)
-
-# ----- Save Function -----
-def save_uploaded_image(uploaded_file):
-    code = f"{random.randint(0, 9999):04}"
-    folder = f"data/{code}"
-    os.makedirs(folder, exist_ok=True)
-
-    input_path = os.path.join(folder, f"{code}_input.png")
-    image = Image.open(uploaded_file).convert("RGB")
-    image.save(input_path)
-
-    encrypt(code)
-    vis_output = visualize(code)
-
-    return code, vis_output
 
 # ----- App UI -----
 st.title("🖼️ Secure Image Exchange App")
@@ -94,26 +85,48 @@ with tab1:
     uploaded_file = st.file_uploader("Upload Image", type=["png", "jpg", "jpeg"])
 
     if uploaded_file is not None:
+        # Generate a unique 4-digit code for the file (simulating it here)
+        code = str(random.randint(1000, 9999))
+
+        # Display the code to the sender immediately
+        st.write(f"Your unique 4-digit code: {code}")
+
         # Save the uploaded image temporarily
-        input_image_path = "temp_input.png"
+        folder = f"data/{code}"
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+        input_image_path = os.path.join(folder, f"{code}_input.png")
         with open(input_image_path, "wb") as f:
             f.write(uploaded_file.getbuffer())
 
-        # Call the encrypt function (it will process the image)
-        encrypted_image = encrypt(input_image_path)  # Assuming encrypt() returns the processed image
-
+        # Encryption and Visualization
+        encrypt(input_image_path, code)
         # Inform the user that the image has been encrypted
         st.info("🔒 The image has been successfully encrypted.")
 
-        # Delete the input image file after encryption
-        os.remove(input_image_path)
-        st.info("The original input image has been deleted after encryption.")
+        visualize(code)
 
+        gif_path = f"data/1234/1234_plot.gif"
+        log_path = f"data/{code}/{code}_log.txt"
 
-# ----- Receive Tab -----
+        # Display the GIF (instead of plot)
+        if os.path.exists(gif_path):
+            st.image(gif_path, caption="Graph Animation", use_container_width=True)
+        else:
+            st.warning("⚠️ GIF file not yet available.")
+
+        # Display log output in a scrollable box
+        if os.path.exists(log_path):
+            with open(log_path, "r") as f:
+                log_text = f.read()
+            st.markdown("### 📄 Visualization Output Log")
+            st.markdown(f'<div class="scrollable-output">{log_text}</div>', unsafe_allow_html=True)
+        else:
+            st.info("ℹ️ No log file found.")
+
+# Receiver Tab - Enter 4-digit Code, Decrypt and Display
 with tab2:
     st.header("Receive Output")
-
     st.markdown("Enter your **4-digit code**:")
 
     # Single input box for the 4-digit code
@@ -121,25 +134,27 @@ with tab2:
 
     if code_input.isdigit() and len(code_input) == 4:
         folder = f"data/{code_input}"
-        encrypted_path = os.path.join(folder, f"{code_input}_input.png")  # Path to the encrypted image
-        plot_path = os.path.join(folder, f"{code_input}_plot.png")  # Path to the plot
+        gif_path = os.path.join(folder, f"{code_input}_plot.gif")  # Path to the gif
         log_path = os.path.join(folder, f"{code_input}_log.txt")
 
         # Check if the folder exists
         if os.path.isdir(folder):
+            # Display "Decrypting..." message
+            decrypting_text = st.text("Decrypting... Please wait.")
+
             # Check if the encrypted image exists and decrypt it (in memory)
-            if os.path.exists(encrypted_path):
-                # Call the decrypt function and store the decrypted result in memory (not saving to file)
-                decrypted_image = decrypt(code_input)  # Assuming decrypt() returns the image in memory
+            if os.path.exists(folder):
+                decrypted_image = decrypt(code_input)
+                decrypting_text.text("Decryption Complete!")
                 st.image(decrypted_image, caption="Decrypted Image", use_container_width=True)
             else:
-                st.warning("⚠️ Encrypted image not available.")
+                st.warning("⚠️ Invalid Code")
             
-            # Check for the plot file and display it
-            if os.path.exists(plot_path):
-                st.image(plot_path, caption="Received Plot", use_container_width=True)
+            # Check for the gif file and display it (for animation)
+            if os.path.exists(gif_path):
+                st.image(gif_path, caption="Received Animation", use_container_width=True)
             else:
-                st.warning("⚠️ Plot file not yet available.")
+                st.warning("⚠️ GIF file not yet available.")
             
             # Display the log file (scrollable)
             if os.path.exists(log_path):
