@@ -1,6 +1,7 @@
 import os
 import networkx as nx
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 from collections import deque
 import sys
 
@@ -82,7 +83,7 @@ def visualize_packet_paths(paths, packet_to_path_mapping):
         print(f"Packet ID {packet_id} uses Path {path_id}")
 
 # Visualization of the graph structure using NetworkX and save it as PNG
-def visualize_graph(graph, output_dir):
+def visualize_graph(graph, source, sink, paths, output_dir):
     # Ensure output directory exists for saving the graph visualization
     os.makedirs(output_dir, exist_ok=True)
 
@@ -94,17 +95,104 @@ def visualize_graph(graph, output_dir):
 
     pos = nx.spring_layout(G)
     labels = nx.get_edge_attributes(G, 'capacity')
+    plt.figure(figsize=(8, 6))  # Create a new figure for this plot
     nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000)
     nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
-    
+
+    # Highlight source and sink nodes
+    nx.draw_networkx_nodes(G, pos, nodelist=[source], node_color='green', node_size=2000)
+    nx.draw_networkx_nodes(G, pos, nodelist=[sink], node_color='red', node_size=2000)
+
+    # Label source and sink nodes
+    plt.text(pos[source][0], pos[source][1] - 0.1, 'Source', ha='center', fontsize=10)
+    plt.text(pos[sink][0], pos[sink][1] - 0.1, 'Sink', ha='center', fontsize=10)
+
+    # Highlight paths used by packets
+    for path in paths:
+        path_edges = list(zip(path[:-1], path[1:]))
+        nx.draw_networkx_edges(G, pos, edgelist=path_edges, edge_color='blue', width=2)
+
     plt.title("Flow Network")
     
     # Save visualization as PNG file in the specified directory
     viz_file_path = os.path.join(output_dir, "VIZ.png")
     plt.savefig(viz_file_path)
     
-    # Close the plot to ensure smooth execution of the rest of the code
-    plt.close()
+    plt.close()  # Close this plot to prevent overlap with the next one
+
+# Animated visualization of packet movement along paths
+def animate_packet_movement(graph, source, sink, paths, packet_to_path_mapping, output_dir):
+    G = nx.DiGraph()
+    
+    for u in range(len(graph)):
+        for v in range(len(graph[u])):
+            if graph[u][v] > 0:
+                G.add_edge(u, v)
+
+    pos = nx.spring_layout(G)
+    
+    fig, ax = plt.subplots(figsize=(8, 6))
+    
+    def update(frame):
+        ax.clear()
+        
+        # Draw base graph structure with nodes and edges
+        nx.draw(G,
+                pos,
+                with_labels=True,
+                node_color="lightblue",
+                node_size=2000,
+                ax=ax)
+        
+        # Highlight source and sink nodes
+        nx.draw_networkx_nodes(G,
+                               pos,
+                               nodelist=[source],
+                               node_color="green",
+                               node_size=2000,
+                               ax=ax)
+        nx.draw_networkx_nodes(G,
+                               pos,
+                               nodelist=[sink],
+                               node_color="red",
+                               node_size=2000,
+                               ax=ax)
+
+        # Animate packet movement along one of the paths (cycling through frames)
+        packet_id = frame // len(paths)  # Cycle through packets
+        path_id = packet_to_path_mapping[packet_id]
+        current_path = paths[path_id]
+        
+        edge_list = list(zip(current_path[:-1], current_path[1:]))
+        
+        # Highlight the entire path for the current packet
+        nx.draw_networkx_edges(G,
+                               pos,
+                               edgelist=edge_list,
+                               edge_color="orange",
+                               width=2.5,
+                               ax=ax)
+        
+        # Highlight the current position of the packet along the path
+        current_node_index = frame % len(current_path)
+        current_node = current_path[current_node_index]
+        
+        ax.text(pos[current_node][0], pos[current_node][1] - 0.1,
+                f"Packet {packet_id}", ha='center', fontsize=10)
+
+        ax.set_title(f"Packet Movement Animation\nCurrent Packet: {packet_id}")
+
+    ani = FuncAnimation(fig,
+                        update,
+                        frames=len(packet_to_path_mapping) * len(paths),
+                        interval=1000,  # Slow down the animation
+                        repeat=True)
+
+    # Save the animation as a GIF file in the output directory
+    ani_file_path = os.path.join(output_dir, "ANI.gif")
+    ani.save(ani_file_path, writer='pillow', fps=30)
+
+    plt.show()
 
 if __name__ == "__main__":
     # Check if output directory name is provided as an argument
@@ -153,5 +241,17 @@ if __name__ == "__main__":
         # Display all paths and their associated packets
         visualize_packet_paths(paths, packet_to_path_mapping)
 
-        # Visualize the graph after displaying paths and packet mappings
-        visualize_graph(capacities, output_dir_name)
+        # Visualize the graph with highlighted paths and source/sink nodes
+        visualize_graph(capacities,
+                        source,
+                        sink,
+                        paths,
+                        output_dir_name)
+
+        # Animate packet movement along their respective paths in the graph
+        animate_packet_movement(capacities,
+                                source,
+                                sink,
+                                paths,
+                                packet_to_path_mapping,
+                                output_dir_name)
