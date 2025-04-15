@@ -1,6 +1,9 @@
 import os
 import streamlit as st
 import random
+# ----- User Modules -------
+from modules.flow import *
+
 
 # ----- Styling -----
 st.markdown("""
@@ -38,40 +41,19 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Mock-up function to simulate encryption
-def encrypt(input_image_path, code_input):
-    # Create the directory for the given 4-digit code if it doesn't exist
-    folder = f"data/{code_input}"
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-
-    # Simulate encryption (moving file to the new directory)
-    encrypted_image_path = os.path.join(folder, f"{code_input}_input.png")
-    os.rename(input_image_path, encrypted_image_path)
-
-    # Delete the original input image after encryption
-    os.remove(input_image_path)
+def encrypt(code_input):
     print("Encrypted")
 
 # Mock-up function to simulate decryption
 def decrypt(code):
-    return f"data/{code}/{code}_output.png"
+    return f"data/{code}/{code}_input.png"
 
-def visualize(code):
-    # print(f"Generating plot for {code}...")
-    # folder = f"data/{code}"
-    # plot_path = os.path.join(folder, f"{code}_plot.gif")
-
-    # # Dummy plot
-    # img = Image.new("RGB", (400, 300), color=(200, 100, 150))
-    # img.save(plot_path)
-
-    lines = [f"Line {i+1}: Visualization result..." for i in range(128)]
-
-    # Save to log file
-    with open(os.path.join(folder, f"{code}_log.txt"), "w") as f:
-        f.write("\n".join(lines))
-
-    return "\n".join(lines)
+# def visualize(code):
+#     lines = [f"Line {i+1}: Visualization result..." for i in range(128)]
+#     # Save to log file
+#     with open(os.path.join(folder, f"{code}_log.txt"), "w") as f:
+#         f.write("\n".join(lines))
+#     return "\n".join(lines)
 
 # ----- App UI -----
 st.title("🖼️ Secure Image Exchange App")
@@ -81,13 +63,11 @@ tab1, tab2 = st.tabs(["📤 Send", "📥 Receive"])
 # Send Tab - Upload Image and Encrypt
 with tab1:
     st.header("Send Image for Encryption")
-
     uploaded_file = st.file_uploader("Upload Image", type=["png", "jpg", "jpeg"])
-
     if uploaded_file is not None:
         # Generate a unique 4-digit code for the file (simulating it here)
-        code = str(random.randint(1000, 9999))
-
+        #code = str(random.randint(1000, 9999))
+        code = "1234"
         # Display the code to the sender immediately
         st.write(f"Your unique 4-digit code: {code}")
 
@@ -100,13 +80,13 @@ with tab1:
             f.write(uploaded_file.getbuffer())
 
         # Encryption and Visualization
-        encrypt(input_image_path, code)
+        encrypt(code)
         # Inform the user that the image has been encrypted
         st.info("🔒 The image has been successfully encrypted.")
 
         visualize(code)
 
-        gif_path = f"data/1234/1234_plot.gif"
+        gif_path = f"data/{code}/{code}_plot.gif"
         log_path = f"data/{code}/{code}_log.txt"
 
         # Display the GIF (instead of plot)
