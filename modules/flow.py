@@ -168,9 +168,6 @@ def animate(code):
     # Animate packet movement along their respective paths in the graph
     animate_packet_movement(capacities,source,sink,paths,packet_to_path_mapping,code)
 
-# packet_to_path_mapping = []
-# paths = []
-
 capacities = [
         [0, 16, 13, 0, 0],
         [0, 0, 10, 12, 0],

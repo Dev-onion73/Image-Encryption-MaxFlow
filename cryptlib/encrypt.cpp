@@ -156,25 +156,24 @@ int main(int argc, char* argv[]){
         return -1;
     }
 
-    
     vector<vector<Vec3b>> imgVec = matToVector(image);
-    
     vector<vector<unsigned char>> grayscale = convertToGrayscale(imgVec);
-    savePGM("grayscale.pgm", grayscale);
-    displayPGM("grayscale.pgm");
-   
+    savePGM((keyPath+"/grayscale.pgm"), grayscale);
+    // displayPGM("grayscale.pgm");
+    cout<<"Grayscaled Image"<<endl;
     int newWidth = 128, newHeight = 128;
     vector<vector<unsigned char>> resizedImage = resizeImage(grayscale, newWidth, newHeight);
-    savePGM("resized.pgm", resizedImage);
-    displayPGM("resized.pgm");
+    savePGM((keyPath+"/resized.pgm"), resizedImage);
+    // displayPGM("resized.pgm");
+    cout<<"Resized Image"<<endl;
     int iterations = 10; 
     vector<vector<unsigned char>> scrambledImage = arnoldScramble(resizedImage, iterations);
-    savePGM("scrambled.pgm",scrambledImage);
-    displayPGM("scrambled.pgm");
+    savePGM((keyPath+"/scrambled.pgm"),scrambledImage);
+    // displayPGM("scrambled.pgm");
+    cout<<"Scrambled Image"<<endl;
     PaillierKey key = generatePaillierKeys(61, 53);
     vector<vector<long long>> encryptedImage = encryptImage(scrambledImage, key);
-    string encryptedFile = keyPath+"/encrypted.bin";
     saveKey(keyPath+"/key.txt", key);
-    saveEncryptedImage(encryptedFile, encryptedImage);
-    
+    saveEncryptedImage(keyPath+"/encrypted.bin", encryptedImage);
+    return 0;
 }

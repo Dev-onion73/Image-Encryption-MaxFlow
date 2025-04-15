@@ -52,8 +52,8 @@ with tab1:
     uploaded_file = st.file_uploader("Upload Image", type=["png", "jpg", "jpeg"])
     if uploaded_file is not None:
         # Generate a unique 4-digit code for the file (simulating it here)
-        #code = str(random.randint(1000, 9999))
-        code = "1234"
+        code = str(random.randint(1000, 9999))
+        
         # Display the code to the sender immediately
         st.write(f"Your unique 4-digit code: {code}")
 

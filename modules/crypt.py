@@ -53,7 +53,7 @@ def decrypt(code):
         )
         print("Execution successful.")
         print("Output:", result.stdout)
-        return result
+        return f"data/{code}/unscrambled.pgm"
     except subprocess.CalledProcessError as e:
         print("Error occurred while executing the binary:")
         print("Return code:", e.returncode)
