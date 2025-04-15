@@ -48,12 +48,6 @@ def encrypt(code_input):
 def decrypt(code):
     return f"data/{code}/{code}_input.png"
 
-# def visualize(code):
-#     lines = [f"Line {i+1}: Visualization result..." for i in range(128)]
-#     # Save to log file
-#     with open(os.path.join(folder, f"{code}_log.txt"), "w") as f:
-#         f.write("\n".join(lines))
-#     return "\n".join(lines)
 
 # ----- App UI -----
 st.title("🖼️ Secure Image Exchange App")
@@ -80,29 +74,56 @@ with tab1:
             f.write(uploaded_file.getbuffer())
 
         # Encryption and Visualization
+        encrypting_text = st.text("Encrypting... Please wait.")
         encrypt(code)
+        encrypting_text.text("Encryption Complete!")
         # Inform the user that the image has been encrypted
         st.info("🔒 The image has been successfully encrypted.")
-
-        visualize(code)
+        
+        visualize_text = st.text("Running Simulations... Please wait.")
+        visualize_logs(code)
+        visualize_text.text("Simulations: ")
 
         gif_path = f"data/{code}/{code}_plot.gif"
         log_path = f"data/{code}/{code}_log.txt"
 
-        # Display the GIF (instead of plot)
-        if os.path.exists(gif_path):
-            st.image(gif_path, caption="Graph Animation", use_container_width=True)
-        else:
-            st.warning("⚠️ GIF file not yet available.")
-
         # Display log output in a scrollable box
         if os.path.exists(log_path):
             with open(log_path, "r") as f:
-                log_text = f.read()
+                log_lines = f.readlines()
+            
             st.markdown("### 📄 Visualization Output Log")
-            st.markdown(f'<div class="scrollable-output">{log_text}</div>', unsafe_allow_html=True)
+
+            log_html = '''
+                <div style="
+                    border:1px solid #ccc;
+                    padding:10px;
+                    max-height:300px;
+                    overflow-y:auto;
+                    background-color:rgb(38, 39, 48);
+                    font-family:monospace;
+                    font-size:14px;
+                    color:white;
+                ">
+                '''
+            for line in log_lines:
+                log_html += f"{line.strip()}<br>"
+            log_html += "</div>"
+
+            st.markdown(log_html, unsafe_allow_html=True)
         else:
             st.info("ℹ️ No log file found.")
+
+        animate_text = st.text("Generating animations... Please wait.")
+        animate(code)
+        animate_text.empty()
+
+        # Display the GIF (instead of plot)
+        if os.path.exists(gif_path):
+            st.markdown("### 📄 Animation")
+            st.image(gif_path, caption="Graph Animation", use_container_width=True)
+        else:
+            st.warning("⚠️ GIF file not yet available.")
 
 # Receiver Tab - Enter 4-digit Code, Decrypt and Display
 with tab2:
@@ -132,16 +153,33 @@ with tab2:
             
             # Check for the gif file and display it (for animation)
             if os.path.exists(gif_path):
-                st.image(gif_path, caption="Received Animation", use_container_width=True)
+                st.markdown("### 📄 Animation")
+                st.image(gif_path, use_container_width=True)
             else:
                 st.warning("⚠️ GIF file not yet available.")
             
             # Display the log file (scrollable)
             if os.path.exists(log_path):
                 with open(log_path, "r") as f:
-                    log_text = f.read()
+                    log_lines = f.readlines()
                 st.markdown("### 📄 Visualization Output Log")
-                st.markdown(f'<div class="scrollable-output">{log_text}</div>', unsafe_allow_html=True)
+                log_html = '''
+                    <div style="
+                        border:1px solid #ccc;
+                        padding:10px;
+                        max-height:300px;
+                        overflow-y:auto;
+                        background-color:rgb(38, 39, 48);
+                        font-family:monospace;
+                        font-size:14px;
+                        color:white;
+                    ">
+                    '''
+                for line in log_lines:
+                    log_html += f"{line.strip()}<br>"
+                log_html += "</div>"
+
+                st.markdown(log_html, unsafe_allow_html=True)
             else:
                 st.info("ℹ️ No log file found.")
         else:

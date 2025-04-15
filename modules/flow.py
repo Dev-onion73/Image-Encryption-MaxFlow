@@ -133,19 +133,9 @@ def animate_packet_movement(graph, source, sink, paths, packet_to_path_mapping, 
     ani_file_path = f"data/{code}/{code}_plot.gif"
     ani.save(ani_file_path, writer='pillow', fps=1)  # Adjust fps for smoother/slower playback
 
-def visualize(code):
+def visualize_logs(code):
+    global packet_to_path_mapping,paths
     output_dir = f"data/{code}"
-
-    capacities = [
-        [0, 16, 13, 0, 0],
-        [0, 0, 10, 12, 0],
-        [0, 4, 0, 0, 14],
-        [0, 0, 9, 0, 20],
-        [0, 0, 0, 7, 0]
-    ]
-
-    source = 0   # Define Node 0 as Source
-    sink = 4     # Define Node 4 as Sink
 
     # Calculate maximum flow and paths using Ford-Fulkerson algorithm
     max_flow_value, paths = ford_fulkerson(capacities, source, sink)
@@ -173,8 +163,21 @@ def visualize(code):
         log_file = f"data/{code}/{code}_log.txt"
         visualize_packet_paths(paths, packet_to_path_mapping,log_file)
 
-        # Visualize the graph with highlighted paths and source/sink nodes
-        # visualize_graph(capacities,source,sink,paths,code)
+        
+def animate(code):
+    # Animate packet movement along their respective paths in the graph
+    animate_packet_movement(capacities,source,sink,paths,packet_to_path_mapping,code)
 
-        # Animate packet movement along their respective paths in the graph
-        animate_packet_movement(capacities,source,sink,paths,packet_to_path_mapping,code)
+# packet_to_path_mapping = []
+# paths = []
+
+capacities = [
+        [0, 16, 13, 0, 0],
+        [0, 0, 10, 12, 0],
+        [0, 4, 0, 0, 14],
+        [0, 0, 9, 0, 20],
+        [0, 0, 0, 7, 0]
+    ]
+
+source = 0   # Define Node 0 as Source
+sink = 4     # Define Node 4 as Sink
