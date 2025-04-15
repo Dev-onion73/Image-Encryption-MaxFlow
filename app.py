@@ -3,6 +3,7 @@ import streamlit as st
 import random
 # ----- User Modules -------
 from modules.flow import *
+from modules.crypt import *
 
 
 # ----- Styling -----
@@ -39,15 +40,6 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
-
-# Mock-up function to simulate encryption
-def encrypt(code_input):
-    print("Encrypted")
-
-# Mock-up function to simulate decryption
-def decrypt(code):
-    return f"data/{code}/{code}_input.png"
-
 
 # ----- App UI -----
 st.title("🖼️ Secure Image Exchange App")
