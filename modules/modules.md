@@ -1,3 +1,4 @@
-# flow.py usage
+# flow_module.py usage
+import flow_module
 
-python script_name.py <Generated_ID>
+flow(<input_file>,<output_directory>)
